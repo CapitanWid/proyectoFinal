@@ -1,0 +1,64 @@
+package com.uniquindio.server.syncup.controller;
+
+import com.uniquindio.server.syncup.model.Formulario;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/formulario")
+public class FormularioController {
+
+    private static final String FILE_PATH = "D:\\datos_syncup\\users.csv";
+
+    @PostMapping
+    public String recibirFormulario(@RequestBody Formulario formulario) {
+        try {
+            // Crear carpeta y archivo si no existen
+            Path path = Paths.get(FILE_PATH);
+            if (!Files.exists(path.getParent())) {
+                Files.createDirectories(path.getParent());
+            }
+            if (!Files.exists(path)) {
+                Files.createFile(path);
+            }
+
+            // Leer todos los usuarios registrados con codificación UTF-8
+            List<String> lineas = Files.readAllLines(path, StandardCharsets.UTF_8);
+
+            // Verificar si el usuario ya existe
+            boolean existeUsuario = lineas.stream()
+                .map(line -> line.split(",")[0].trim()) // obtener username de cada linea
+                .anyMatch(username -> username.equalsIgnoreCase(formulario.getUsuario()));
+
+            if (existeUsuario) {
+                return "Usuario ya existe";
+            }
+
+            // Construir línea CSV para el nuevo usuario
+            String nuevaLinea = String.join(",",
+                formulario.getUsuario(),
+                formulario.getNombre(),
+                formulario.getApellido(),
+                formulario.getCorreo(),
+                formulario.getContraseña()
+            );
+
+            // Añadir nueva línea al archivo con codificación UTF-8
+            try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8, StandardOpenOption.APPEND)) {
+                writer.write(nuevaLinea);
+                writer.newLine();
+            }
+
+            System.out.println("Formulario recibido: " + formulario);
+            return "Formulario recibido";
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "Error al procesar el formulario";
+        }
+    }
+}

@@ -1,0 +1,104 @@
+package com.uniquindio.server.syncup.model;
+
+public class Cancion {
+
+    private String titulo;
+    private String artista;
+    private String album;
+    private String genero;
+    private String compositor;
+    private String anio;
+    private int duracionSegundos;
+    private String nombreArchivo; // 🔹 Nuevo campo
+
+    public Cancion(String titulo, String artista, String album, String genero, String compositor, String anio, int duracionSegundos, String nombreArchivo) {
+        this.titulo = titulo;
+        this.artista = artista;
+        this.album = album;
+        this.genero = genero;
+        this.compositor = compositor;
+        this.anio = anio;
+        this.duracionSegundos = duracionSegundos;
+        this.nombreArchivo = nombreArchivo; // 🔹 Asignación
+    }
+
+    // 🔹 Getters y setters
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public String getArtista() {
+        return artista;
+    }
+
+    public void setArtista(String artista) {
+        this.artista = artista;
+    }
+
+    public String getAlbum() {
+        return album;
+    }
+
+    public void setAlbum(String album) {
+        this.album = album;
+    }
+
+    public String getGenero() {
+        return genero;
+    }
+
+    public void setGenero(String genero) {
+        this.genero = genero;
+    }
+
+    public String getCompositor() {
+        return compositor;
+    }
+
+    public void setCompositor(String compositor) {
+        this.compositor = compositor;
+    }
+
+    public String getAnio() {
+        return anio;
+    }
+
+    public void setAnio(String anio) {
+        this.anio = anio;
+    }
+
+    public int getDuracionSegundos() {
+        return duracionSegundos;
+    }
+
+    public void setDuracionSegundos(int duracionSegundos) {
+        this.duracionSegundos = duracionSegundos;
+    }
+
+    public String getNombreArchivo() {
+        return nombreArchivo;
+    }
+
+    public void setNombreArchivo(String nombreArchivo) {
+        this.nombreArchivo = nombreArchivo;
+    }
+
+    @Override
+    public String toString() {
+        return "Cancion{" +
+                "titulo='" + titulo + '\'' +
+                ", artista='" + artista + '\'' +
+                ", album='" + album + '\'' +
+                ", genero='" + genero + '\'' +
+                ", compositor='" + compositor + '\'' +
+                ", anio='" + anio + '\'' +
+                ", duracionSegundos=" + duracionSegundos +
+                ", nombreArchivo='" + nombreArchivo + '\'' +
+                '}';
+    }
+}

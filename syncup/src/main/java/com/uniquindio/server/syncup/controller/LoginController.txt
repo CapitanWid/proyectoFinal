@@ -1,0 +1,48 @@
+package com.uniquindio.server.syncup.controller;
+
+import com.uniquindio.server.syncup.model.Formulario;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/login")
+public class LoginController {
+
+    private static final String FILE_PATH = "D:\\datos_syncup\\users.csv";
+
+    @PostMapping
+    public String login(@RequestBody Formulario loginRequest) {
+        try {
+            Path path = Paths.get(FILE_PATH);
+            if (!Files.exists(path)) {
+                return "Error: archivo de usuarios no encontrado";
+            }
+
+            List<String> lineas = Files.readAllLines(path, StandardCharsets.UTF_8);
+
+            for (String linea : lineas) {
+                // Formato CSV: usuario,nombre,apellido,correo,contraseña
+                String[] campos = linea.split(",");
+                if (campos.length < 5) continue;
+
+                String usuarioCSV = campos[0].trim();
+                String contraseñaCSV = campos[4].trim();
+
+                if (usuarioCSV.equalsIgnoreCase(loginRequest.getUsuario())
+                        && contraseñaCSV.equals(loginRequest.getContraseña())) {
+                    return "Login exitoso";
+                }
+            }
+
+            return "Usuario o contraseña incorrectos";
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "Error al procesar el login";
+        }
+    }
+}

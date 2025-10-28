@@ -1,0 +1,1 @@
+Nombre: w, Apellido: d, Correo: w11@gmail.com, Usuario: wid, Contraseña: 123, RepetirContraseña: 123
