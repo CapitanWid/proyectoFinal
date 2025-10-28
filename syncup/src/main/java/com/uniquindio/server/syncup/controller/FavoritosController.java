@@ -23,6 +23,8 @@ public class FavoritosController {
 
     @PostMapping("/agregar")
     public String agregarFavorito(@RequestParam String usuarioId, @RequestParam String cancionId) {
+       
+               
         Usuario usuario = tablaUsuarios.buscarUsuario(usuarioId);
         if (usuario == null) {
             return "Usuario no encontrado";

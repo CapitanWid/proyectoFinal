@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncup_music_app/screens/screen1_home.dart';
 import 'package:syncup_music_app/screens/screen9_modificar_perfil_usuario.dart';
+import 'package:syncup_music_app/service/audio_player_service.dart';
 
 class PerfilScreen extends StatelessWidget {
   const PerfilScreen({super.key});
 
   Future<void> _logout(BuildContext context) async {
+
+    final audioService = AudioPlayerService();
+    await audioService.player.stop();
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', false);
 

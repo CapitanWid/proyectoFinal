@@ -54,6 +54,7 @@ class AudioPlayerService {
   Future<void> toggleFavorite() async {
     final cancion = currentSong.value;
     if (cancion == null) return;
+              
 
     final isFav = favoriteSongIds.contains(cancion.id);
     final uri = Uri.parse(

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncup_music_app/constants/constants.dart';
 import 'package:syncup_music_app/screens/screen5_player.dart';
+import 'package:syncup_music_app/service/audio_player_service.dart';
 
 class ScreenLogin extends StatefulWidget {
   const ScreenLogin({super.key});
@@ -49,6 +50,9 @@ class _ScreenLoginState extends State<ScreenLogin> {
         userApellido = userData['apellido'];
         userCorreo = userData['correo'];
         userPassword = userData['contrasena']; // ← agregado
+
+        final audioService = AudioPlayerService();
+        audioService.usuarioId = userUsuario;
 
         // Guardar también en SharedPreferences
         final prefs = await SharedPreferences.getInstance();
