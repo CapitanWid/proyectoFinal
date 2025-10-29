@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncup_music_app/constants/constants.dart';
 import 'package:syncup_music_app/screens/screen5_player.dart';
+import 'package:syncup_music_app/screens_admin/screen1_admin_principal.dart';
 import 'package:syncup_music_app/service/audio_player_service.dart';
 
 class ScreenLogin extends StatefulWidget {
@@ -50,6 +51,8 @@ class _ScreenLoginState extends State<ScreenLogin> {
         userApellido = userData['apellido'];
         userCorreo = userData['correo'];
         userPassword = userData['contrasena']; // ← agregado
+        userTipo = userData['tipo'];
+
 
         final audioService = AudioPlayerService();
         audioService.usuarioId = userUsuario;
@@ -62,16 +65,34 @@ class _ScreenLoginState extends State<ScreenLogin> {
         await prefs.setString('apellido', userApellido);
         await prefs.setString('correo', userCorreo);
         await prefs.setString('contrasena', userPassword); // ← agregado
+        await prefs.setString('tipo', userTipo);
+
+
+        debugPrint("🟣 Datos recibidos del servidor: $userData");
+        debugPrint("🟣 Tipo de usuario: ${userData['tipo']}");
+
+
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('✅ Inicio de sesión exitoso')),
           );
 
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const Screen5Player()),
-          );
+          
+
+          if (userTipo == 'ADMIN') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const ScreenAdmin()),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const Screen5Player()),
+            );
+
+
+        }
         }
       } else if (response.statusCode == 401) {
         if (context.mounted) {

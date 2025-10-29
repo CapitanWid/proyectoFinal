@@ -11,5 +11,7 @@ String userNombre = "";
 String userApellido = "";
 String userCorreo = "";
 String userPassword = "";
+String userTipo = ""; // NORMAL o ADMIN
+
 
 

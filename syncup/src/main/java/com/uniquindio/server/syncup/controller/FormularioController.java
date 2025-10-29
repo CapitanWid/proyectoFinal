@@ -2,6 +2,7 @@ package com.uniquindio.server.syncup.controller;
 
 import com.uniquindio.server.syncup.datastructures.TablaHashUsuarios;
 import com.uniquindio.server.syncup.model.Formulario;
+import com.uniquindio.server.syncup.model.TipoUsuario;
 import com.uniquindio.server.syncup.model.Usuario;
 import org.springframework.web.bind.annotation.*;
 
@@ -86,6 +87,7 @@ public class FormularioController {
     // MÉTODOS AUXILIARES
     // =========================================================
 
+    
     private void cargarUsuariosDesdeCSV() {
         Path path = Paths.get(FILE_PATH);
         if (!Files.exists(path)) {
@@ -108,6 +110,14 @@ public class FormularioController {
                             partes[4].trim()  // contraseña
                     );
 
+                    // 🔹 Si el usuario es "admin" o su correo contiene "admin", darle privilegios
+                    if (usuario.getUsuario().equalsIgnoreCase("admin") ||
+                        usuario.getCorreo().toLowerCase().contains("admin")) {
+                        usuario.setTipo(TipoUsuario.ADMIN);
+                    } else {
+                        usuario.setTipo(TipoUsuario.NORMAL);
+                    }
+
                     if (!tablaUsuarios.existeUsuario(usuario.getUsuario())) {
                         tablaUsuarios.agregarUsuario(usuario);
                         count++;
@@ -121,6 +131,7 @@ public class FormularioController {
             System.out.println("❌ Error al leer el archivo CSV");
         }
     }
+
 
     // Permite a otros controladores acceder a la tabla
     public static TablaHashUsuarios getTablaUsuarios() {

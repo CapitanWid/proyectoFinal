@@ -8,6 +8,7 @@ public class Usuario {
     private String apellido;
     private String correo;
     private String contrasena;
+    private TipoUsuario tipo;
 
     private LinkedList<Cancion> listaFavoritos; // Lista en memoria
 
@@ -18,6 +19,7 @@ public class Usuario {
         this.correo = correo;
         this.contrasena = contrasena;
         this.listaFavoritos = new LinkedList<>();
+        this.tipo = TipoUsuario.NORMAL;
     }
 
     // --- Métodos para favoritos ---
@@ -54,4 +56,10 @@ public class Usuario {
 
     public String getContrasena() { return contrasena; }
     public void setContrasena(String contrasena) { this.contrasena = contrasena; }
+
+    //metodos de tipo usuario
+        public TipoUsuario getTipo() { return tipo; }
+    public void setTipo(TipoUsuario tipo) { this.tipo = tipo; }
+
+    public boolean esAdmin() { return tipo == TipoUsuario.ADMIN; }
 }
