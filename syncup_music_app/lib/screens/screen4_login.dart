@@ -68,11 +68,6 @@ class _ScreenLoginState extends State<ScreenLogin> {
         await prefs.setString('tipo', userTipo);
 
 
-        debugPrint("🟣 Datos recibidos del servidor: $userData");
-        debugPrint("🟣 Tipo de usuario: ${userData['tipo']}");
-
-
-
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('✅ Inicio de sesión exitoso')),

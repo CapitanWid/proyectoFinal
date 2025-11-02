@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:syncup_music_app/widgets/audio_player_widget.dart';
-import 'package:syncup_music_app/service/audio_player_service.dart';
 import 'package:syncup_music_app/screens/screen7_perfil_usuario.dart';
+import 'package:syncup_music_app/screens_admin/screen2_gestionar_usuarios.dart';
+import 'package:syncup_music_app/screens_admin/screen3_admin_gestionar_canciones.dart';
+import 'package:syncup_music_app/screens_admin/screen6_admin_metricas.dart';
 
 // ======================================================
 // PANTALLA PRINCIPAL DEL ADMINISTRADOR
@@ -14,8 +15,6 @@ class ScreenAdmin extends StatefulWidget {
 }
 
 class _ScreenAdminState extends State<ScreenAdmin> {
-  final AudioPlayerService _audioService = AudioPlayerService();
-
   // ======================================================
   // BOTÓN GENERAL DE MENÚ
   // ======================================================
@@ -46,13 +45,16 @@ class _ScreenAdminState extends State<ScreenAdmin> {
     return ListView(
       children: [
         _buildMenuButton(Icons.supervised_user_circle, "Gestionar usuarios", () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Abrir pantalla de gestión de usuarios")),
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ScreenGestionarUsuarios()),
           );
         }),
+
         _buildMenuButton(Icons.library_music, "Gestionar canciones", () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Abrir pantalla de gestión de canciones")),
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ScreenAdminGestionarCanciones()),
           );
         }),
         _buildMenuButton(Icons.playlist_add, "Subir nueva canción", () {
@@ -61,8 +63,9 @@ class _ScreenAdminState extends State<ScreenAdmin> {
           );
         }),
         _buildMenuButton(Icons.analytics, "Ver estadísticas", () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Abrir pantalla de estadísticas")),
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ScreenAdminMetricas()),
           );
         }),
         _buildMenuButton(Icons.report, "Reportes de usuarios", () {
@@ -112,12 +115,6 @@ class _ScreenAdminState extends State<ScreenAdmin> {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: _buildScrollableButtons(),
-      ),
-
-      // 🔹 Reproductor fijo al fondo
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-        child: const AudioPlayerWidget(),
       ),
     );
   }

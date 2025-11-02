@@ -99,4 +99,20 @@ public class RepositorioCanciones {
 
         return resultados;
     }
+
+    public boolean eliminarCancionPorId(String id) {
+        if (listaCanciones.estaVacia()) return false;
+
+        int indice = 0;
+        for (Cancion c : listaCanciones) {
+            if (c.getId().equals(id)) {
+                listaCanciones.eliminarEn(indice);
+                System.out.println("🗑 Canción eliminada: " + c.getTitulo());
+                return true;
+            }
+            indice++;
+        }
+        return false; // No encontrada
+    }
+
 }
