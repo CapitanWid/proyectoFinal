@@ -38,7 +38,7 @@ class _Screen5PlayerState extends State<Screen5Player> {
   Widget _buildScrollableButtons() {
     return ListView(
       children: [
-        _buildMenuButton(Icons.search, "Buscar", () {
+        _buildMenuButton(Icons.search, "Buscar canciones", () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const BusquedaScreen()),
@@ -56,8 +56,8 @@ class _Screen5PlayerState extends State<Screen5Player> {
       }),
 
         _buildMenuButton(Icons.explore, "Descubrimiento semanal", () {}),
-        _buildMenuButton(Icons.people_alt, "Siguiendo", () {}),
-        _buildMenuButton(Icons.group, "Conectar", () {}),
+        _buildMenuButton(Icons.people_alt, "Conectar con usuarios", () {}),
+        //_buildMenuButton(Icons.group, "Conectar", () {}),
       ],
     );
   }

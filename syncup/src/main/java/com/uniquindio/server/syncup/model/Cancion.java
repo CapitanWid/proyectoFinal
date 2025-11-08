@@ -8,9 +8,9 @@ public class Cancion implements Comparable<Cancion> {
     private String id; // RF-018: Identificador único
     private String titulo;
     private String artista;
-    private String album;
+    //private String album;
     private String genero;
-    private String compositor;
+    //private String compositor;
     private String anio;
     private int duracionSegundos;
     private String nombreArchivo;
@@ -18,14 +18,12 @@ public class Cancion implements Comparable<Cancion> {
     // RF-019: Relaciones del grafo
     private List<Cancion> similares;
 
-    public Cancion(String id, String titulo, String artista, String album, String genero,
-                   String compositor, String anio, int duracionSegundos, String nombreArchivo) {
+    public Cancion(String id, String titulo, String artista, String genero,
+                   String anio, int duracionSegundos, String nombreArchivo) {
         this.id = id;
         this.titulo = titulo;
         this.artista = artista;
-        this.album = album;
         this.genero = genero;
-        this.compositor = compositor;
         this.anio = anio;
         this.duracionSegundos = duracionSegundos;
         this.nombreArchivo = nombreArchivo;
@@ -53,14 +51,8 @@ public class Cancion implements Comparable<Cancion> {
     public String getArtista() { return artista; }
     public void setArtista(String artista) { this.artista = artista; }
 
-    public String getAlbum() { return album; }
-    public void setAlbum(String album) { this.album = album; }
-
     public String getGenero() { return genero; }
     public void setGenero(String genero) { this.genero = genero; }
-
-    public String getCompositor() { return compositor; }
-    public void setCompositor(String compositor) { this.compositor = compositor; }
 
     public String getAnio() { return anio; }
     public void setAnio(String anio) { this.anio = anio; }

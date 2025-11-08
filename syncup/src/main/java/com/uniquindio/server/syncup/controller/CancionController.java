@@ -177,7 +177,7 @@ public class CancionController {
                     }
                 } else {
                     c = new Cancion(UUID.randomUUID().toString(), titulo, artista, 
-                            "", genero, "", anio, 0, nombreArchivo);
+                            genero, anio, 0, nombreArchivo);
                     repo.agregarCancion(c);
                     cargadas++;
                 }
@@ -212,5 +212,30 @@ public class CancionController {
 
         return ResponseEntity.ok("Canción agregada correctamente al catálogo");
     }
+
+    // ============================================================
+    // 9️⃣ LISTAR ARCHIVOS EN /no_listadas
+    // ============================================================
+    @GetMapping("/archivos")
+    public ResponseEntity<List<String>> listarArchivosNoListadas() {
+        try {
+            File carpeta = new File("D:\\datos_syncup\\no_listadas\\");
+            if (!carpeta.exists() || !carpeta.isDirectory()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(List.of("No se encontró la carpeta especificada"));
+            }
+
+            String[] nombres = carpeta.list();
+            if (nombres == null) return ResponseEntity.ok(List.of());
+
+            List<String> archivos = new ArrayList<>(Arrays.asList(nombres));
+            return ResponseEntity.ok(archivos);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(List.of("Error al listar archivos: " + e.getMessage()));
+        }
+    }
+
 
 }

@@ -25,17 +25,11 @@ public class ExtractorMetadatos {
                             ? tag.getFirst(FieldKey.ARTIST)
                             : "Desconocido";
 
-            String album = (tag != null && !tag.getFirst(FieldKey.ALBUM).isEmpty())
-                            ? tag.getFirst(FieldKey.ALBUM)
-                            : "Desconocido";
 
             String genero = (tag != null && !tag.getFirst(FieldKey.GENRE).isEmpty())
                             ? tag.getFirst(FieldKey.GENRE)
                             : "Desconocido";
 
-            String compositor = (tag != null && !tag.getFirst(FieldKey.COMPOSER).isEmpty())
-                            ? tag.getFirst(FieldKey.COMPOSER)
-                            : "";
 
             String anio = (tag != null && !tag.getFirst(FieldKey.YEAR).isEmpty())
                             ? tag.getFirst(FieldKey.YEAR)
@@ -50,9 +44,7 @@ public class ExtractorMetadatos {
                     java.util.UUID.randomUUID().toString(),
                     titulo,
                     artista,
-                    album,
                     genero,
-                    compositor,
                     anio,
                     duracion,
                     nombreArchivo  // 🔹 Se pasa al constructor

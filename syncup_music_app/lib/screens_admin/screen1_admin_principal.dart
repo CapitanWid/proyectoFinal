@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:syncup_music_app/screens/screen7_perfil_usuario.dart';
 import 'package:syncup_music_app/screens_admin/screen2_gestionar_usuarios.dart';
 import 'package:syncup_music_app/screens_admin/screen3_admin_gestionar_canciones.dart';
+import 'package:syncup_music_app/screens_admin/screen5_admin_agregar_cancion.dart';
 import 'package:syncup_music_app/screens_admin/screen6_admin_metricas.dart';
+import 'package:syncup_music_app/screens_admin/screen7_admin_carga_masiva.dart';
 
 // ======================================================
 // PANTALLA PRINCIPAL DEL ADMINISTRADOR
@@ -58,8 +60,9 @@ class _ScreenAdminState extends State<ScreenAdmin> {
           );
         }),
         _buildMenuButton(Icons.playlist_add, "Subir nueva canción", () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Abrir pantalla para subir canciones")),
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ScreenAdminCargarCanciones()),
           );
         }),
         _buildMenuButton(Icons.analytics, "Ver estadísticas", () {
