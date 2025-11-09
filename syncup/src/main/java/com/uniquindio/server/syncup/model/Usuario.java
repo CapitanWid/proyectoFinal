@@ -2,7 +2,8 @@ package com.uniquindio.server.syncup.model;
 
 import java.util.LinkedList;
 
-public class Usuario {
+public class Usuario implements Comparable<Usuario> {
+
     private String usuario;
     private String nombre;
     private String apellido;
@@ -10,7 +11,7 @@ public class Usuario {
     private String contrasena;
     private TipoUsuario tipo;
 
-    private LinkedList<Cancion> listaFavoritos; // Lista en memoria
+    private LinkedList<Cancion> listaFavoritos;
 
     public Usuario(String usuario, String nombre, String apellido, String correo, String contrasena) {
         this.usuario = usuario;
@@ -23,9 +24,7 @@ public class Usuario {
     }
 
     // --- Métodos para favoritos ---
-    public LinkedList<Cancion> getListaFavoritos() {
-        return listaFavoritos;
-    }
+    public LinkedList<Cancion> getListaFavoritos() { return listaFavoritos; }
 
     public void agregarFavorito(Cancion cancion) {
         if (!listaFavoritos.contains(cancion)) {
@@ -41,7 +40,7 @@ public class Usuario {
         return listaFavoritos.contains(cancion);
     }
 
-    // --- Getters y Setters básicos ---
+    // --- Getters y Setters ---
     public String getUsuario() { return usuario; }
     public void setUsuario(String usuario) { this.usuario = usuario; }
 
@@ -57,9 +56,15 @@ public class Usuario {
     public String getContrasena() { return contrasena; }
     public void setContrasena(String contrasena) { this.contrasena = contrasena; }
 
-    //metodos de tipo usuario
-        public TipoUsuario getTipo() { return tipo; }
+    public TipoUsuario getTipo() { return tipo; }
     public void setTipo(TipoUsuario tipo) { this.tipo = tipo; }
 
     public boolean esAdmin() { return tipo == TipoUsuario.ADMIN; }
+
+    // --- Implementación de Comparable ---
+    @Override
+    public int compareTo(Usuario otro) {
+        // Comparamos por nombre de usuario (campo único)
+        return this.usuario.compareToIgnoreCase(otro.usuario);
+    }
 }

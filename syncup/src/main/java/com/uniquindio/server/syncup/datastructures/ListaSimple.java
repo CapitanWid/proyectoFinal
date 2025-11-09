@@ -1,7 +1,9 @@
 package com.uniquindio.server.syncup.datastructures;
 
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 /*
@@ -271,5 +273,17 @@ public class ListaSimple<T extends Comparable<T>> implements Iterable<T> {
         sb.append("]");
         return sb.toString();
     }
+
+    public List<T> toList() {
+        List<T> lista = new ArrayList<>();
+        Nodo<T> actual = firstNode;
+
+        while (actual != null) {
+            lista.add(actual.getDato());
+            actual = actual.getSiguiente();
+        }
+
+        return lista;
+    }    
 }
 

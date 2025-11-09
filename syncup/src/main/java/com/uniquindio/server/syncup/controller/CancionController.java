@@ -3,9 +3,12 @@ package com.uniquindio.server.syncup.controller;
 import com.uniquindio.server.syncup.dto.BusquedaRequest;
 import com.uniquindio.server.syncup.dto.FiltroRequest;
 import com.uniquindio.server.syncup.model.Cancion;
+import com.uniquindio.server.syncup.model.Usuario;
 import com.uniquindio.server.syncup.service.RepositorioCanciones;
 import com.uniquindio.server.syncup.service.ExtractorMetadatos;
+import com.uniquindio.server.syncup.datastructures.GrafoDeSimilitudCancion;
 import com.uniquindio.server.syncup.datastructures.ListaSimple;
+import com.uniquindio.server.syncup.datastructures.TablaHashUsuarios;
 
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -22,6 +25,10 @@ public class CancionController {
 
     // Repositorio compartido (instancia única)
     private static final RepositorioCanciones repo = new RepositorioCanciones();
+
+    // Grafo de similitud (se construye una sola vez)
+    private static GrafoDeSimilitudCancion grafoSimilitud = null;
+
 
     public static RepositorioCanciones getRepositorio() {
         return repo;
@@ -236,6 +243,112 @@ public class CancionController {
                     .body(List.of("Error al listar archivos: " + e.getMessage()));
         }
     }
+
+
+    // ============================================================
+    // 🔄 Construir o reconstruir grafo de similitud
+    // ============================================================
+    private void construirGrafoSiNoExiste() {
+        if (grafoSimilitud == null) {
+            List<Cancion> canciones = new ArrayList<>();
+            for (Cancion c : repo.getListaCanciones()) {
+                canciones.add(c);
+            }
+            grafoSimilitud = GrafoDeSimilitudCancion.construir(canciones, 1);
+            System.out.println("✅ Grafo de similitud construido con " + canciones.size() + " canciones.");
+        }
+    }
+
+    // ============================================================
+    // 🔟 RECOMENDAR CANCIONES SIMILARES // PARA INICIAR RADIO
+    // ============================================================
+    @PostMapping("/recomendar")
+    public ResponseEntity<List<Cancion>> recomendarCanciones(@RequestBody Cancion base) {
+        try {
+            construirGrafoSiNoExiste();
+
+            if (base == null || base.getTitulo() == null) {
+                return ResponseEntity.badRequest().body(List.of());
+            }
+
+            // Buscar la cancion base dentro del repositorio (por titulo)
+            Cancion baseReal = null;
+            for (Cancion c : repo.getListaCanciones()) {
+                if (c.getTitulo().equalsIgnoreCase(base.getTitulo())) {
+                    baseReal = c;
+                    break;
+                }
+            }
+
+            if (baseReal == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(List.of());
+            }
+
+            // Obtener recomendaciones
+            List<Cancion> recomendadas = grafoSimilitud.recomendarCanciones(baseReal, 5);
+            return ResponseEntity.ok(recomendadas);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(List.of());
+        }
+    }
+
+
+    @PostMapping("/recomendar-por-favoritos")
+    public ResponseEntity<List<Cancion>> recomendarPorFavoritos(@RequestParam String nombreUsuario) {
+        try {
+            TablaHashUsuarios tablaUsuarios = FormularioController.getTablaUsuarios();
+            Usuario usuario = tablaUsuarios.buscarUsuario(nombreUsuario);
+
+            if (usuario == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of());
+            }
+
+            List<Cancion> favoritas = usuario.getListaFavoritos();
+            if (favoritas == null || favoritas.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(List.of());
+            }
+
+            // 🔹 Construir grafo general con todo el catálogo
+            List<Cancion> todas = new ArrayList<>();
+            for (Cancion c : repo.getListaCanciones()) {
+                todas.add(c);
+            }
+
+            GrafoDeSimilitudCancion grafoGeneral = GrafoDeSimilitudCancion.construir(todas, 1);
+
+            // 🔹 Buscar canciones similares a las favoritas
+            Set<Cancion> recomendadas = new HashSet<>();
+            for (Cancion fav : favoritas) {
+                List<Cancion> similares = grafoGeneral.recomendarCanciones(fav, 5);
+                for (Cancion s : similares) {
+                    if (!favoritas.contains(s)) {
+                        recomendadas.add(s);
+                    }
+                }
+            }
+
+            if (recomendadas.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(List.of());
+            }
+
+            System.out.println("✅ Recomendaciones generadas para " + nombreUsuario + ": " + recomendadas.size());
+            return ResponseEntity.ok(new ArrayList<>(recomendadas));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
+        }
+    }
+
+
+
+
+
+
 
 
 }

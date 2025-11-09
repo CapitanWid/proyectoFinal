@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:syncup_music_app/screens/screen10_favoritos.dart';
+import 'package:syncup_music_app/screens/screen11_descubrimiento_semanal.dart';
+import 'package:syncup_music_app/screens/screen12_grafo_social.dart';
 import 'package:syncup_music_app/screens/screen7_perfil_usuario.dart';
 import 'package:syncup_music_app/screens/screen8_busqueda.dart';
 import 'package:syncup_music_app/widgets/audio_player_widget.dart';
@@ -55,8 +57,26 @@ class _Screen5PlayerState extends State<Screen5Player> {
         );
       }),
 
-        _buildMenuButton(Icons.explore, "Descubrimiento semanal", () {}),
-        _buildMenuButton(Icons.people_alt, "Conectar con usuarios", () {}),
+        _buildMenuButton(Icons.explore, "Descubrimiento semanal", () {
+          Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const ScreenDescubrimientoSemanal(),
+          ),
+        );
+
+
+        }),
+
+      
+        _buildMenuButton(Icons.people_alt, "Conectar con usuarios", () {
+          Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const ScreenGrafoSocial(),
+          ),
+        );
+        }),
         //_buildMenuButton(Icons.group, "Conectar", () {}),
       ],
     );
