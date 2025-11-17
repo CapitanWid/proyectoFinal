@@ -80,6 +80,8 @@ public class CancionController {
     // ============================================================
     // 3️⃣ AUTOCOMPLETAR TÍTULOS (usuario)
     // ============================================================
+   
+   /*
     @GetMapping("/autocompletar")
     public ResponseEntity<List<String>> autocompletarTitulos(@RequestParam String query) {
         List<String> sugerencias = new ArrayList<>();
@@ -90,6 +92,12 @@ public class CancionController {
         }
         return ResponseEntity.ok(sugerencias);
     }
+    */
+    @GetMapping("/autocompletar")
+    public ResponseEntity<List<String>> autocompletarTitulos(@RequestParam String query) {
+        return ResponseEntity.ok(repo.autocompletarTitulos(query));
+    }
+
 
     // ============================================================
     // 4️⃣ LISTAR TODAS LAS CANCIONES (Administrador)
@@ -262,39 +270,28 @@ public class CancionController {
     // ============================================================
     // 🔟 RECOMENDAR CANCIONES SIMILARES // PARA INICIAR RADIO
     // ============================================================
-    @PostMapping("/recomendar")
-    public ResponseEntity<List<Cancion>> recomendarCanciones(@RequestBody Cancion base) {
+    @GetMapping("/radio/{idCancion}")
+    public ResponseEntity<List<Cancion>> iniciarRadio(@PathVariable String idCancion) {
         try {
             construirGrafoSiNoExiste();
 
-            if (base == null || base.getTitulo() == null) {
-                return ResponseEntity.badRequest().body(List.of());
+            // Buscar la cancion base por ID
+            Cancion base = repo.buscarPorId(idCancion);
+            if (base == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of());
             }
 
-            // Buscar la cancion base dentro del repositorio (por titulo)
-            Cancion baseReal = null;
-            for (Cancion c : repo.getListaCanciones()) {
-                if (c.getTitulo().equalsIgnoreCase(base.getTitulo())) {
-                    baseReal = c;
-                    break;
-                }
-            }
+            // Obtener 10 similares
+            List<Cancion> radio = grafoSimilitud.recomendarCanciones(base, 10);
 
-            if (baseReal == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(List.of());
-            }
-
-            // Obtener recomendaciones
-            List<Cancion> recomendadas = grafoSimilitud.recomendarCanciones(baseReal, 5);
-            return ResponseEntity.ok(recomendadas);
+            return ResponseEntity.ok(radio);
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(List.of());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
         }
     }
+
 
 
     @PostMapping("/recomendar-por-favoritos")
@@ -343,6 +340,8 @@ public class CancionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
         }
     }
+
+
 
 
 

@@ -1,19 +1,30 @@
 package com.uniquindio.server.syncup.service;
 
 import com.uniquindio.server.syncup.datastructures.ListaSimple;
+import com.uniquindio.server.syncup.datastructures.Trie;
 import com.uniquindio.server.syncup.model.Cancion;
-import com.uniquindio.server.syncup.service.ExtractorMetadatos;
 import com.uniquindio.server.syncup.dto.FiltroRequest;
 
+
 import java.io.File;
+import java.util.List;
 
 public class RepositorioCanciones {
 
     private final ListaSimple<Cancion> listaCanciones = new ListaSimple<>();
     private final String carpetaCanciones = "D:\\datos_syncup\\songs\\";
+    private Trie trieTitulos = new Trie();
+
 
     public RepositorioCanciones() {
         cargarCancionesDesdeCarpeta();
+
+        for (Cancion c : listaCanciones) {
+            if (c != null && c.getTitulo() != null) {
+                trieTitulos.insertar(c.getTitulo().toLowerCase());
+                System.out.println("🔥 Insertado en Trie (inicio): " + c.getTitulo());
+            }
+        }    
     }
 
     private void cargarCancionesDesdeCarpeta() {
@@ -39,10 +50,31 @@ public class RepositorioCanciones {
     public ListaSimple<Cancion> getListaCanciones() {
         return listaCanciones;
     }
-
+/* 
     public void agregarCancion(Cancion cancion) {
         listaCanciones.agregarFinal(cancion);
     }
+*/
+    // Para autocompletar canciones por trie:
+    public void agregarCancion(Cancion c) {
+        listaCanciones.agregarFinal(c);
+
+        // Insertar automáticamente el título en el Trie
+        if (c.getTitulo() != null) {
+            trieTitulos.insertar(c.getTitulo().toLowerCase());
+            System.out.println("🔥 Insertado en Trie: " + c.getTitulo());
+        } else {
+        System.out.println("⚠️ Canción sin título: " + c);
+     }
+    }
+
+    public List<String> autocompletarTitulos(String prefijo) {
+        if (prefijo == null || prefijo.isBlank()) {
+            return List.of();
+        }
+        return trieTitulos.autocompletar(prefijo.toLowerCase());
+    }
+
 
     public Cancion buscarPorTitulo(String titulo) {
         for (Cancion c : listaCanciones) {
@@ -114,5 +146,15 @@ public class RepositorioCanciones {
         }
         return false; // No encontrada
     }
+
+
+    public Cancion buscarPorId(String id) {
+        for (Cancion c : listaCanciones) {
+            if (c != null && c.getId().equals(id)) {
+                return c;
+            }
+        }
+        return null;
+    }    
 
 }

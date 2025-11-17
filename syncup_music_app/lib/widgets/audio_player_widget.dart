@@ -155,12 +155,22 @@ class AudioPlayerWidget extends StatelessWidget {
                     },
                   ),
 
-                  // ⏮️ Anterior
+                  
+                  // 📻 Boton de Radio
                   IconButton(
-                    icon: const Icon(Icons.skip_previous,
-                        color: Colors.deepPurple, size: 32),
-                    onPressed: () {},
+                    icon: const Icon(
+                      Icons.radio,
+                      color: Colors.deepPurple,
+                      size: 30,
+                    ),
+                    onPressed: () {
+                      final cancion = audioService.currentSong.value;
+                      if (cancion != null) {
+                        audioService.iniciarRadio(cancion);
+                      }
+                    },
                   ),
+
 
                   // ▶️ / ⏸️
                   ValueListenableBuilder<bool>(
@@ -187,7 +197,9 @@ class AudioPlayerWidget extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.skip_next,
                         color: Colors.deepPurple, size: 32),
-                    onPressed: () {},
+                    onPressed: () {
+                      audioService.siguiente();
+                    },
                   ),
                 ],
               );

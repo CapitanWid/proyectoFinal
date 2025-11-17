@@ -8,9 +8,7 @@ public class Cancion implements Comparable<Cancion> {
     private String id; // RF-018: Identificador único
     private String titulo;
     private String artista;
-    //private String album;
     private String genero;
-    //private String compositor;
     private String anio;
     private int duracionSegundos;
     private String nombreArchivo;

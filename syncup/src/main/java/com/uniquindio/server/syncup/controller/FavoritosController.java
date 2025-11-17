@@ -4,7 +4,20 @@ import com.uniquindio.server.syncup.datastructures.TablaHashUsuarios;
 import com.uniquindio.server.syncup.model.Cancion;
 import com.uniquindio.server.syncup.model.Usuario;
 import com.uniquindio.server.syncup.service.RepositorioCanciones;
+
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.io.IOException;
 
 import java.util.LinkedList;
 
@@ -72,4 +85,52 @@ public class FavoritosController {
         }
         return null;
     }
+    
+    @GetMapping("/{usuarioId}/csv")
+    public ResponseEntity<Resource> generarCsvFavoritos(@PathVariable String usuarioId) {
+
+        Usuario usuario = tablaUsuarios.buscarUsuario(usuarioId);
+
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        LinkedList<Cancion> favoritos = usuario.getListaFavoritos();
+        if (favoritos == null || favoritos.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+
+        // Construir CSV
+        StringBuilder csvBuilder = new StringBuilder();
+        csvBuilder.append("titulo;artista;genero;anio;archivo\n");
+
+        for (Cancion c : favoritos) {
+            csvBuilder.append(c.getTitulo()).append(";")
+                    .append(c.getArtista()).append(";")
+                    .append(c.getGenero()).append(";")
+                    .append(c.getAnio()).append(";")
+                    .append(c.getNombreArchivo()).append("\n");
+        }
+
+        try {
+            // Crear archivo temporal
+            Path tempFile = Files.createTempFile("favoritos_", ".csv");
+            Files.write(tempFile, csvBuilder.toString().getBytes());
+
+            Resource resource = new FileSystemResource(tempFile.toFile());
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=favoritos.csv")
+                    .contentType(MediaType.parseMediaType("text/csv"))
+                    .contentLength(resource.contentLength())
+                    .body(resource);
+
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+
+
 }

@@ -17,6 +17,10 @@ class AudioPlayerService {
   final ValueNotifier<bool> isPlaying = ValueNotifier(false);
   final ValueNotifier<bool> isLoading = ValueNotifier(false);
 
+  // --- Cola de reproduccion ---
+  List<Cancion> playQueue = [];
+  int currentIndex = 0;
+
   // --- Favoritos (canciones por id) ---
   final List<String> favoriteSongIds = [];
 
@@ -39,6 +43,30 @@ class AudioPlayerService {
       isLoading.value = false;
     }
   }
+
+  void cargarCola(List<Cancion> canciones) {
+    playQueue = canciones;
+    currentIndex = 0;
+
+    if (canciones.isNotEmpty) {
+      playSong(canciones[0]);
+    }
+  }
+
+  Future<void> reproducirEn(int index) async {
+    if (index < 0 || index >= playQueue.length) return;
+
+    currentIndex = index;
+    await playSong(playQueue[index]);
+  }
+
+  void siguiente() {
+    if (currentIndex < playQueue.length - 1) {
+      currentIndex++;
+      reproducirEn(currentIndex);
+    }
+  }
+
 
   Future<void> togglePlayPause() async {
     if (player.playing) {
@@ -77,4 +105,19 @@ class AudioPlayerService {
   }
 
   bool isFavorite(Cancion cancion) => favoriteSongIds.contains(cancion.id);
+
+
+  Future<void> iniciarRadio(Cancion base) async {
+    final url = Uri.parse('$baseUrl/api/canciones/radio/${base.id}');
+    final res = await http.get(url);
+
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body) as List;
+      final lista = data.map((e) => Cancion.fromJson(e)).toList();
+      cargarCola(lista);
+    } else {
+      debugPrint("Error al iniciar radio: ${res.statusCode}");
+    }
+  }
+
 }

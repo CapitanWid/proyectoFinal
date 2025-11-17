@@ -49,13 +49,11 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
     }
   }
 
-
   Future<void> _buscarCanciones() async {
     setState(() => _isLoading = true);
 
     final filtros = <Map<String, dynamic>>[];
 
-    // --- Solo agregamos filtros válidos ---
     if (_busquedaAvanzada) {
       if (_logicaArtista != "NINGUNO" &&
           _artistaController.text.trim().isNotEmpty) {
@@ -118,8 +116,6 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
     }
   }
 
-
-
   Widget _buildCampoConLogica({
     required String label,
     required TextEditingController controller,
@@ -164,80 +160,76 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: ListView(
+                padding: const EdgeInsets.only(bottom: 200),
                 children: [
-                  // --- Título con autocompletado ---
-                  /*
-                  Autocomplete<String>(
-                    optionsBuilder: (TextEditingValue textEditingValue) {
-                      _buscarSugerencias(textEditingValue.text);
-                      return _sugerencias.where(
-                        (s) => s
-                            .toLowerCase()
-                            .contains(textEditingValue.text.toLowerCase()),
-                      );
-                    },
-                    fieldViewBuilder:
-                        (context, controller, focusNode, onEditingComplete) {
-                      _tituloController.text = controller.text;
-                      return TextField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        onEditingComplete: onEditingComplete,
-                        decoration: InputDecoration(
-                          labelText: "Título de la canción",
-                          filled: true,
-                          fillColor: Colors.grey.shade100,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                  // ⭐⭐⭐ AUTOCOMPLETE ARREGLADO ⭐⭐⭐
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Material(
+                        child: Autocomplete<String>(
+                          optionsBuilder: (TextEditingValue textEditingValue) {
+                            final query = textEditingValue.text;
+
+                            if (query.isEmpty) {
+                              _sugerencias = [];
+                              return const Iterable<String>.empty();
+                            }
+
+                            if (query.length >= 2) {
+                              _buscarSugerencias(query);
+                            }
+
+                            return _sugerencias.where(
+                              (s) => s
+                                  .toLowerCase()
+                                  .contains(query.toLowerCase()),
+                            );
+                          },
+
+                          fieldViewBuilder: (context, controller, focusNode,
+                              onEditingComplete) {
+                            return TextField(
+                              controller: controller,
+                              focusNode: focusNode,
+                              onEditingComplete: onEditingComplete,
+                              decoration: InputDecoration(
+                                labelText: "Título de la canción",
+                                filled: true,
+                                fillColor: Colors.grey.shade100,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                suffixIcon: controller.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.close),
+                                        onPressed: () {
+                                          controller.clear();
+                                          _sugerencias.clear();
+                                          setState(() {});
+                                        },
+                                      )
+                                    : null,
+                              ),
+                              onChanged: (_) => setState(() {}),
+                            );
+                          },
+
+                          onSelected: (String selection) {
+                            _tituloController.text = selection;
+
+                            // evita el salto de layout
+                            Future.delayed(
+                                const Duration(milliseconds: 100), () {
+                              FocusScope.of(context).unfocus();
+                            });
+
+                            _buscarCanciones();
+                          },
                         ),
                       );
                     },
-                    onSelected: (String selection) {
-                      _tituloController.text = selection;
-                      _buscarCanciones();
-                    },
                   ),
-*/
 
-                  Autocomplete<String>(
-                    optionsBuilder: (TextEditingValue textEditingValue) {
-                      final query = textEditingValue.text;
-                      if (query.isEmpty) {
-                        // Limpiar sugerencias si no hay texto
-                        _sugerencias = [];
-                        return const Iterable<String>.empty();
-                      }
-
-                      // Llamar al servidor solo si hay al menos 2 caracteres
-                      if (query.length >= 2) {
-                        _buscarSugerencias(query);
-                      }
-
-                      return _sugerencias.where(
-                        (s) => s.toLowerCase().contains(query.toLowerCase()),
-                      );
-                    },
-                    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-                      return TextField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        onEditingComplete: onEditingComplete,
-                        decoration: InputDecoration(
-                          labelText: "Título de la canción",
-                          filled: true,
-                          fillColor: Colors.grey.shade100,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      );
-                    },
-                    onSelected: (String selection) {
-                      _tituloController.text = selection;
-                      _buscarCanciones();
-                    },
-                  ),
                   const SizedBox(height: 12),
 
                   SwitchListTile(
@@ -291,9 +283,7 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
                         subtitle: Text(
                             "${cancion.artista} • ${cancion.genero} • ${cancion.anio}"),
                         onTap: () {
-                          _audioService.playSong(
-                              cancion);
-                              
+                          _audioService.playSong(cancion);
                         },
                       )),
                 ],
@@ -301,9 +291,13 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
             ),
           ),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: AudioPlayerWidget(),
+          // ⭐⭐⭐ REPRODUCTOR FIJO Y SEGURO ⭐⭐⭐
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: AudioPlayerWidget(),
+            ),
           ),
         ],
       ),
