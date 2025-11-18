@@ -1,13 +1,12 @@
 package com.uniquindio.server.syncup.datastructures;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public class Trie {
 
     private NodoTrie raiz = new NodoTrie();
 
+    // Insertar palabra en el trie
     public void insertar(String palabra) {
         NodoTrie nodo = raiz;
         for (char c : palabra.toLowerCase().toCharArray()) {
@@ -17,30 +16,38 @@ public class Trie {
         nodo.setFinPalabra(true);
     }
 
-    public List<String> autocompletar(String prefijo) {
-        List<String> resultados = new ArrayList<>();
+    // Autocompletar usando SOLO ListaSimple<String>
+    public ListaSimple<String> autocompletar(String prefijo) {
+
+        ListaSimple<String> resultados = new ListaSimple<>();
         NodoTrie nodo = raiz;
 
-        // Navegar hasta el nodo del prefijo
+        // Navegar hasta el nodo final del prefijo
         for (char c : prefijo.toLowerCase().toCharArray()) {
             if (!nodo.getHijos().containsKey(c)) {
-                return resultados; // no hay coincidencias
+                return resultados; // lista vacía, pero válida
             }
             nodo = nodo.getHijos().get(c);
         }
 
+        // Recolectar todas las palabras desde aquí
         recolectar(nodo, new StringBuilder(prefijo), resultados);
+
         return resultados;
     }
 
-    private void recolectar(NodoTrie nodo, StringBuilder actual, List<String> resultados) {
+    // Recolección recursiva usando ListaSimple<String>
+    private void recolectar(NodoTrie nodo, StringBuilder actual, ListaSimple<String> resultados) {
+
         if (nodo.isFinPalabra()) {
-            resultados.add(actual.toString());
+            resultados.agregarFinal(actual.toString());
         }
 
+        // Recorrer todos los hijos (MAP SÍ se puede usar)
         for (Map.Entry<Character, NodoTrie> e : nodo.getHijos().entrySet()) {
-            recolectar(e.getValue(), new StringBuilder(actual).append(e.getKey()), resultados);
+            actual.append(e.getKey());
+            recolectar(e.getValue(), actual, resultados);
+            actual.deleteCharAt(actual.length() - 1); // retroceder
         }
     }
 }
-

@@ -1,6 +1,6 @@
 package com.uniquindio.server.syncup.model;
 
-import java.util.LinkedList;
+import com.uniquindio.server.syncup.datastructures.ListaSimple;
 
 public class Usuario implements Comparable<Usuario> {
 
@@ -11,7 +11,7 @@ public class Usuario implements Comparable<Usuario> {
     private String contrasena;
     private TipoUsuario tipo;
 
-    private LinkedList<Cancion> listaFavoritos;
+    private ListaSimple<Cancion> listaFavoritos;
 
     public Usuario(String usuario, String nombre, String apellido, String correo, String contrasena) {
         this.usuario = usuario;
@@ -19,28 +19,46 @@ public class Usuario implements Comparable<Usuario> {
         this.apellido = apellido;
         this.correo = correo;
         this.contrasena = contrasena;
-        this.listaFavoritos = new LinkedList<>();
+
+        // Estructura propia
+        this.listaFavoritos = new ListaSimple<>();
         this.tipo = TipoUsuario.NORMAL;
     }
 
-    // --- Métodos para favoritos ---
-    public LinkedList<Cancion> getListaFavoritos() { return listaFavoritos; }
+    // =============================
+    // MÉTODOS PARA FAVORITOS
+    // =============================
+
+    public ListaSimple<Cancion> getListaFavoritos() {
+        return listaFavoritos;
+    }
 
     public void agregarFavorito(Cancion cancion) {
-        if (!listaFavoritos.contains(cancion)) {
-            listaFavoritos.add(cancion);
+        if (cancion == null) return;
+
+        // Evitar repetidos
+        if (listaFavoritos.obtenerPosicionNodo(cancion) == -1) {
+            listaFavoritos.agregarFinal(cancion);
         }
     }
 
     public void eliminarFavorito(Cancion cancion) {
-        listaFavoritos.remove(cancion);
+        if (cancion == null) return;
+
+        int pos = listaFavoritos.obtenerPosicionNodo(cancion);
+        if (pos != -1) {
+            listaFavoritos.eliminarEn(pos);
+        }
     }
 
     public boolean esFavorito(Cancion cancion) {
-        return listaFavoritos.contains(cancion);
+        return listaFavoritos.obtenerPosicionNodo(cancion) != -1;
     }
 
-    // --- Getters y Setters ---
+    // =============================
+    // GETTERS Y SETTERS
+    // =============================
+
     public String getUsuario() { return usuario; }
     public void setUsuario(String usuario) { this.usuario = usuario; }
 
@@ -61,10 +79,12 @@ public class Usuario implements Comparable<Usuario> {
 
     public boolean esAdmin() { return tipo == TipoUsuario.ADMIN; }
 
-    // --- Implementación de Comparable ---
+    // =============================
+    // COMPARABLE
+    // =============================
+
     @Override
     public int compareTo(Usuario otro) {
-        // Comparamos por nombre de usuario (campo único)
         return this.usuario.compareToIgnoreCase(otro.usuario);
     }
 }

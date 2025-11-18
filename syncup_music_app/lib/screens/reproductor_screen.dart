@@ -14,9 +14,6 @@ class _ReproductorScreenState extends State<ReproductorScreen> {
   final AudioPlayer _player = AudioPlayer();
   bool _cargando = false;
 
-  // ✅ Dirección IP del servidor (ajústala si usas dispositivo físico)
-  //final String url = 'http://10.0.2.2:8080/api/canciones/honey.mp3';
- // final String url = 'http://192.168.5.2:8080/api/canciones/honey.mp3';
  final url = '$baseUrl/api/canciones/minero.mp3';
   
 

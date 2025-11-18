@@ -1,11 +1,10 @@
 package com.uniquindio.server.syncup.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.uniquindio.server.syncup.datastructures.ListaSimple;
 
 public class Cancion implements Comparable<Cancion> {
 
-    private String id; // RF-018: Identificador único
+    private String id;
     private String titulo;
     private String artista;
     private String genero;
@@ -13,8 +12,8 @@ public class Cancion implements Comparable<Cancion> {
     private int duracionSegundos;
     private String nombreArchivo;
 
-    // RF-019: Relaciones del grafo
-    private List<Cancion> similares;
+    // Estructura de datos propia
+    private ListaSimple<Cancion> similares;
 
     public Cancion(String id, String titulo, String artista, String genero,
                    String anio, int duracionSegundos, String nombreArchivo) {
@@ -25,21 +24,26 @@ public class Cancion implements Comparable<Cancion> {
         this.anio = anio;
         this.duracionSegundos = duracionSegundos;
         this.nombreArchivo = nombreArchivo;
-        this.similares = new ArrayList<>();
+
+        // Crear lista propia
+        this.similares = new ListaSimple<>();
     }
 
-    // --- Métodos de grafo ---
+    // --- Métodos del grafo ---
     public void agregarSimilitud(Cancion otra) {
-        if (!similares.contains(otra)) {
-            similares.add(otra);
+
+        // Evitar duplicados usando equals(id)
+        if (similares.obtenerPosicionNodo(otra) == -1) {
+            similares.agregarFinal(otra);
         }
     }
 
-    public List<Cancion> getSimilares() {
+    // Getter actualizado
+    public ListaSimple<Cancion> getSimilares() {
         return similares;
     }
 
-    // --- Getters y setters ---
+    // --- Getters y setters restantes ---
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -61,7 +65,7 @@ public class Cancion implements Comparable<Cancion> {
     public String getNombreArchivo() { return nombreArchivo; }
     public void setNombreArchivo(String nombreArchivo) { this.nombreArchivo = nombreArchivo; }
 
-    // --- RF-020: hashCode y equals basados en id ---
+    // --- equals y hashCode basados en id ---
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -89,8 +93,6 @@ public class Cancion implements Comparable<Cancion> {
 
     @Override
     public int compareTo(Cancion otra) {
-        // Ordenar por título (puedes cambiarlo por ID si prefieres)
         return this.getTitulo().compareToIgnoreCase(otra.getTitulo());
     }
-
 }

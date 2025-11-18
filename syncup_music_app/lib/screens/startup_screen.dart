@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncup_music_app/screens/screen1_home.dart';
-import 'package:syncup_music_app/screens/reproductor_screen.dart';
 import 'package:syncup_music_app/screens/screen5_player.dart';
 
 class StartupScreen extends StatefulWidget {

@@ -19,6 +19,9 @@ class _ScreenAdminCargarCancionesState
   List<String> archivos = [];
   String? archivoSeleccionado;
 
+  // 🔥 AHORA ES UNA LISTA (LA SOLUCIÓN REAL)
+  List<String> archivosCargados = [];
+
   @override
   void initState() {
     super.initState();
@@ -35,14 +38,12 @@ class _ScreenAdminCargarCancionesState
         final lista = List<String>.from(json.decode(response.body));
         setState(() => archivos = lista);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al listar archivos: ${response.body}')),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error al listar archivos: ${response.body}')));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error de conexión: $e')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Error de conexión: $e')));
     } finally {
       setState(() => cargando = false);
     }
@@ -50,24 +51,38 @@ class _ScreenAdminCargarCancionesState
 
   Future<void> _cargarCanciones() async {
     if (archivoSeleccionado == null) return;
+
     setState(() {
       cargando = true;
       resultado = "";
     });
 
     final url = Uri.parse('$baseUrl/api/canciones/cargar');
+
     try {
-      final response = await http.post(url);
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"archivo": archivoSeleccionado}),
+      );
+
       if (response.statusCode == 200) {
-        setState(() => resultado = response.body);
+        setState(() {
+          resultado = response.body;
+
+          // 🔥 AGREGAR EL ARCHIVO A LA LISTA DE BLOQUEADOS
+          if (!archivosCargados.contains(archivoSeleccionado)) {
+            archivosCargados.add(archivoSeleccionado!);
+          }
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Canciones cargadas correctamente ✅')),
         );
       } else {
         setState(() => resultado = "Error: ${response.body}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${response.body}')),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: ${response.body}')));
       }
     } catch (e) {
       setState(() => resultado = "Error de conexión: $e");
@@ -116,7 +131,7 @@ class _ScreenAdminCargarCancionesState
             ),
             const SizedBox(height: 12),
 
-            // Lista de archivos reales
+            // Lista de archivos
             Expanded(
               child: cargando
                   ? const Center(child: CircularProgressIndicator())
@@ -126,33 +141,55 @@ class _ScreenAdminCargarCancionesState
                           itemCount: archivos.length,
                           itemBuilder: (context, index) {
                             final archivo = archivos[index];
+
                             final esSeleccionado =
                                 archivo == archivoSeleccionado;
+
+                            final yaCargado =
+                                archivosCargados.contains(archivo);
+
                             return ListTile(
-                              tileColor: esSeleccionado
-                                  ? Colors.deepPurple.shade100
-                                  : null,
+                              tileColor: yaCargado
+                                  ? Colors.grey.shade300
+                                  : esSeleccionado
+                                      ? Colors.deepPurple.shade100
+                                      : null,
+
                               leading: Icon(
-                                archivo.endsWith(".txt")
-                                    ? Icons.description
-                                    : Icons.music_note,
-                                color: archivo.endsWith(".txt")
-                                    ? Colors.amber
-                                    : Colors.blueAccent,
+                                Icons.description,
+                                color: yaCargado
+                                    ? Colors.grey // 🔥 icono gris
+                                    : Colors.amber,
                               ),
-                              title: Text(archivo, style: textStyle),
-                              onTap: () => setState(
-                                  () => archivoSeleccionado = archivo),
+
+                              title: Text(
+                                archivo,
+                                style: TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontSize: 14,
+                                  color: yaCargado
+                                      ? Colors.grey // 🔥 texto gris
+                                      : Colors.black,
+                                ),
+                              ),
+
+                              onTap: yaCargado
+                                  ? null
+                                  : () => setState(
+                                      () => archivoSeleccionado = archivo),
                             );
                           },
                         ),
             ),
+
             const SizedBox(height: 20),
 
             // Botón de carga
             Center(
               child: ElevatedButton.icon(
-                onPressed: cargando || archivoSeleccionado == null
+                onPressed: cargando ||
+                        archivoSeleccionado == null ||
+                        archivosCargados.contains(archivoSeleccionado)
                     ? null
                     : _cargarCanciones,
                 icon: const Icon(Icons.upload_file),
@@ -170,6 +207,7 @@ class _ScreenAdminCargarCancionesState
                 ),
               ),
             ),
+
             const SizedBox(height: 16),
 
             if (resultado.isNotEmpty)

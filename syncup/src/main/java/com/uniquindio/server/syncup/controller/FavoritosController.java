@@ -1,5 +1,6 @@
 package com.uniquindio.server.syncup.controller;
 
+import com.uniquindio.server.syncup.datastructures.ListaSimple;
 import com.uniquindio.server.syncup.datastructures.TablaHashUsuarios;
 import com.uniquindio.server.syncup.model.Cancion;
 import com.uniquindio.server.syncup.model.Usuario;
@@ -18,8 +19,6 @@ import org.springframework.http.MediaType;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.io.IOException;
-
-import java.util.LinkedList;
 
 @RestController
 @RequestMapping("/api/favoritos")
@@ -71,10 +70,20 @@ public class FavoritosController {
     }
 
     @GetMapping("/{usuarioId}")
-    public LinkedList<Cancion> obtenerFavoritos(@PathVariable String usuarioId) {
+    public ResponseEntity<Cancion[]> obtenerFavoritos(@PathVariable String usuarioId) {
+
         Usuario usuario = tablaUsuarios.buscarUsuario(usuarioId);
-        if (usuario == null) return new LinkedList<>();
-        return usuario.getListaFavoritos();
+
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Cancion[0]);
+        }
+
+        ListaSimple<Cancion> favs = usuario.getListaFavoritos();
+
+        // Convertir estructura propia → arreglo JSON compatible
+        Cancion[] respuesta = favs.toArray(Cancion.class);
+
+        return ResponseEntity.ok(respuesta);
     }
 
     private Cancion buscarCancionPorId(String id) {
@@ -95,8 +104,10 @@ public class FavoritosController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
-        LinkedList<Cancion> favoritos = usuario.getListaFavoritos();
-        if (favoritos == null || favoritos.isEmpty()) {
+
+        ListaSimple<Cancion> favoritos = usuario.getListaFavoritos();
+
+        if (favoritos == null || favoritos.size() == 0) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
 

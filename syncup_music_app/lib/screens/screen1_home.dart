@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:syncup_music_app/components/button_registro.dart';
-import 'package:syncup_music_app/components/button_login.dart'; // Asegúrate de importar esto
+import 'package:syncup_music_app/components/button_login.dart'; 
 
 class Screen1Home extends StatefulWidget {
   const Screen1Home({super.key});
@@ -13,7 +13,7 @@ class _Screen1HomeState extends State<Screen1Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Puedes personalizar según tu diseño
+      backgroundColor: Colors.white, 
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center, // Centra verticalmente
@@ -29,7 +29,7 @@ class _Screen1HomeState extends State<Screen1Home> {
 
             // Logo de la app (debe estar en assets e incluido en pubspec.yaml)
             Image.asset(
-              'assets/images/logo.png', // Cambia esta ruta según tu logo
+              'assets/images/logo.png', // ruta del logo
               height: 150,
             ),
             const SizedBox(height: 40),

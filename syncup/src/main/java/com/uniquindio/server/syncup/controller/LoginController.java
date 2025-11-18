@@ -24,7 +24,7 @@ public class LoginController {
                     .body("Usuario o contrasena incorrectos");
         }
 
-        // ✅ Si las credenciales son válidas, devolver el usuario como JSON
+        // Si las credenciales son válidas, devolver el usuario como JSON
         return ResponseEntity.ok(usuario);
     }
 }

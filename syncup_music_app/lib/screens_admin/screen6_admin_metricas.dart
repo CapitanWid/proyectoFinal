@@ -230,7 +230,7 @@ class _ScreenAdminMetricasState extends State<ScreenAdminMetricas> {
                           valor.toInt().toString(),
                           style: const TextStyle(
                             fontSize: 12,
-                            color: Colors.white,
+                            color: Colors.black,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

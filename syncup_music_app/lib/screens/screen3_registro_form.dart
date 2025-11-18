@@ -5,10 +5,6 @@ import 'package:syncup_music_app/screens/screen1_home.dart';
 
 import 'package:syncup_music_app/constants/constants.dart';
 
-
-// Importa la pantalla del reproductor
-import 'package:syncup_music_app/screens/reproductor_screen.dart';
-
 class ScreenRegistroForm extends StatefulWidget {
   const ScreenRegistroForm({super.key});
 

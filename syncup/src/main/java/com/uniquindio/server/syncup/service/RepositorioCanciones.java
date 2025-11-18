@@ -4,10 +4,8 @@ import com.uniquindio.server.syncup.datastructures.ListaSimple;
 import com.uniquindio.server.syncup.datastructures.Trie;
 import com.uniquindio.server.syncup.model.Cancion;
 import com.uniquindio.server.syncup.dto.FiltroRequest;
-
-
 import java.io.File;
-import java.util.List;
+
 
 public class RepositorioCanciones {
 
@@ -67,7 +65,7 @@ public class RepositorioCanciones {
         System.out.println("⚠️ Canción sin título: " + c);
      }
     }
-
+/*
     public List<String> autocompletarTitulos(String prefijo) {
         if (prefijo == null || prefijo.isBlank()) {
             return List.of();
@@ -75,6 +73,27 @@ public class RepositorioCanciones {
         return trieTitulos.autocompletar(prefijo.toLowerCase());
     }
 
+    */
+
+    public ListaSimple<String> autocompletarTitulos(String prefijo) {
+
+        ListaSimple<String> resultado = new ListaSimple<>();
+
+        if (prefijo == null || prefijo.isBlank()) {
+            return resultado; // ListaSimple vacía
+        }
+
+        // Obtener resultados desde el trie
+        ListaSimple<String> desdeTrie = trieTitulos.autocompletar(prefijo.toLowerCase());
+
+        // Copiar uno por uno (en caso de que el trie devuelva otra cosa)
+        for (String s : desdeTrie) {
+            resultado.agregarFinal(s);
+        }
+
+        return resultado;
+    }
+    
 
     public Cancion buscarPorTitulo(String titulo) {
         for (Cancion c : listaCanciones) {

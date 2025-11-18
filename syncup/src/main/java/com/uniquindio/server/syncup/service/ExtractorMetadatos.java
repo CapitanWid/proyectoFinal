@@ -37,7 +37,7 @@ public class ExtractorMetadatos {
 
             int duracion = (header != null) ? header.getTrackLength() : 0; // en segundos
 
-            // ✅ Nuevo parámetro: nombre real del archivo (sin la ruta)
+            //  Nuevo parámetro: nombre real del archivo (sin la ruta)
             String nombreArchivo = archivo.getName();
 
             return new Cancion(
@@ -47,7 +47,7 @@ public class ExtractorMetadatos {
                     genero,
                     anio,
                     duracion,
-                    nombreArchivo  // 🔹 Se pasa al constructor
+                    nombreArchivo  //  Se pasa al constructor
             );
         } catch (Exception e) {
             e.printStackTrace();

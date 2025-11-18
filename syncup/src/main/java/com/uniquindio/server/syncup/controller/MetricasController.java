@@ -16,22 +16,31 @@ public class MetricasController {
     private final RepositorioCanciones repo = CancionController.getRepositorio();
 
     // ============================================================
-    // 1️⃣ Canciones más populares según favoritos de los usuarios
+    // 1️⃣ Canciones más populares según favoritos
     // ============================================================
     @GetMapping("/populares")
     public List<Map<String, Object>> cancionesMasPopulares() {
+
         Map<String, Integer> conteo = new HashMap<>();
 
+        // obtenerTodos() devuelve ListaSimple<Usuario>
         for (Usuario u : tablaUsuarios.obtenerTodos()) {
+
+            // ListaSimple<Cancion>
             if (u.getListaFavoritos() == null) continue;
 
             for (Cancion c : u.getListaFavoritos()) {
+                if (c == null) continue;
+
                 String titulo = c.getTitulo();
+                if (titulo == null) titulo = "Desconocido";
+
                 conteo.put(titulo, conteo.getOrDefault(titulo, 0) + 1);
             }
         }
 
         List<Map<String, Object>> resultado = new ArrayList<>();
+
         conteo.entrySet().stream()
                 .sorted((a, b) -> b.getValue() - a.getValue())
                 .limit(10)
@@ -50,20 +59,25 @@ public class MetricasController {
     // ============================================================
     @GetMapping("/artistas_populares")
     public List<Map<String, Object>> artistasMasPopulares() {
+
         Map<String, Integer> conteo = new HashMap<>();
 
         for (Usuario u : tablaUsuarios.obtenerTodos()) {
+
             if (u.getListaFavoritos() == null) continue;
 
             for (Cancion c : u.getListaFavoritos()) {
-                String artista = (c.getArtista() != null && !c.getArtista().isBlank())
-                        ? c.getArtista()
-                        : "Desconocido";
+                if (c == null) continue;
+
+                String artista = c.getArtista();
+                if (artista == null || artista.isBlank()) artista = "Desconocido";
+
                 conteo.put(artista, conteo.getOrDefault(artista, 0) + 1);
             }
         }
 
         List<Map<String, Object>> resultado = new ArrayList<>();
+
         conteo.entrySet().stream()
                 .sorted((a, b) -> b.getValue() - a.getValue())
                 .limit(10)

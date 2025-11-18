@@ -2,11 +2,11 @@ package com.uniquindio.server.syncup.controller;
 
 import com.uniquindio.server.syncup.datastructures.GrafoSocial;
 import com.uniquindio.server.syncup.datastructures.TablaHashUsuarios;
+import com.uniquindio.server.syncup.datastructures.ListaSimple;
 import com.uniquindio.server.syncup.model.Usuario;
+
 import org.springframework.web.bind.annotation.*;
 import jakarta.annotation.PostConstruct;
-import java.util.LinkedList;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/grafo")
@@ -15,11 +15,11 @@ public class GrafoSocialController {
 
     private final GrafoSocial grafo = new GrafoSocial();
 
-    // ⚙️ Acceso a la tabla compartida de usuarios
+    // Tabla de usuarios compartida
     private final TablaHashUsuarios tablaUsuarios = FormularioController.getTablaUsuarios();
 
     // =========================================================
-    // 🔹 SINCRONIZAR USUARIOS EXISTENTES CON EL GRAFO
+    //  SINCRONIZAR USUARIOS EXISTENTES CON EL GRAFO
     // =========================================================
     @PostMapping("/sincronizar")
     public String sincronizarUsuarios() {
@@ -28,7 +28,8 @@ public class GrafoSocialController {
             return "Error: la tabla de usuarios no está disponible.";
         }
 
-        LinkedList<Usuario> lista = tablaUsuarios.obtenerTodos();
+        // Lista propia
+        ListaSimple<Usuario> lista = tablaUsuarios.obtenerTodos();
         int nuevos = 0;
 
         for (Usuario u : lista) {
@@ -43,27 +44,29 @@ public class GrafoSocialController {
     }
 
     // =========================================================
-    // 🔹 SINCRONIZACIÓN AUTOMÁTICA ANTES DE CADA PETICIÓN
+    //  SINCRONIZACIÓN AUTOMÁTICA ANTES DE CADA REQUEST
     // =========================================================
     @ModelAttribute
     public void actualizarAntesDeCualquierPeticion() {
         try {
-            sincronizarUsuarios(); // 🔄 Se ejecuta automáticamente antes de cualquier request
+            sincronizarUsuarios();
         } catch (Exception e) {
             System.err.println("⚠️ Error durante la sincronización automática: " + e.getMessage());
         }
     }
 
     // =========================================================
-    // 🔹 OBTENER TODOS LOS USUARIOS DEL GRAFO
+    //  OBTENER TODOS LOS USUARIOS DEL GRAFO (SIN LIST)
     // =========================================================
     @GetMapping("/usuarios")
-    public List<Usuario> listarUsuarios() {
-        return grafo.getUsuarios();
+    public Usuario[] listarUsuarios() {
+        // El grafo debe tener un método getUsuarios() → ListaSimple<Usuario>
+        ListaSimple<Usuario> lista = grafo.getUsuarios();
+        return lista.toArray(Usuario.class);
     }
 
     // =========================================================
-    // 🔹 RELACIONES: SEGUIR / DEJAR DE SEGUIR
+    //  RELACIONES: SEGUIR / DEJAR DE SEGUIR
     // =========================================================
     @PostMapping("/seguir")
     public String seguir(@RequestParam String usuario1, @RequestParam String usuario2) {
@@ -78,15 +81,16 @@ public class GrafoSocialController {
     }
 
     // =========================================================
-    // 🔹 BFS: AMIGOS DE AMIGOS
+    //  BFS: AMIGOS DE AMIGOS (SIN LIST)
     // =========================================================
     @GetMapping("/amigos")
-    public List<Usuario> obtenerAmigos(@RequestParam String usuario, @RequestParam int nivel) {
-        return grafo.bfsAmigos(usuario, nivel).toList();
+    public Usuario[] obtenerAmigos(@RequestParam String usuario, @RequestParam int nivel) {
+        ListaSimple<Usuario> lista = grafo.bfsAmigos(usuario, nivel);
+        return lista.toArray(Usuario.class);
     }
 
     // =========================================================
-    // 🔹 SINCRONIZACIÓN AUTOMÁTICA AL INICIO DEL SERVIDOR
+    //  INICIALIZAR GRAFO AL ARRANCAR EL SERVIDOR
     // =========================================================
     @PostConstruct
     public void inicializarGrafo() {
@@ -98,4 +102,16 @@ public class GrafoSocialController {
             System.err.println("⚠️ Error al inicializar el grafo social: " + e.getMessage());
         }
     }
+
+    // =========================================================
+    //  LISTA DE AMIGOS SIGUIENDO
+    // =========================================================
+    @GetMapping("/siguiendo")
+    public Usuario[] obtenerSiguiendo(@RequestParam String usuario) {
+
+        ListaSimple<Usuario> lista = grafo.obtenerSeguidos(usuario);
+
+        return lista.toArray(Usuario.class);
+    }
+
 }

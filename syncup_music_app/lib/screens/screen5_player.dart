@@ -86,6 +86,7 @@ class _Screen5PlayerState extends State<Screen5Player> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         titleSpacing: 0,
         title: Row(
           children: [

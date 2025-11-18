@@ -16,7 +16,6 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
-import java.nio.file.*;
 import java.util.*;
 
 @RestController
@@ -55,8 +54,11 @@ public class CancionController {
     // ============================================================
     // 2️⃣ BUSCAR CANCIONES POR TÍTULO Y FILTROS (usuario)
     // ============================================================
+    
+    //public ResponseEntity<List<Cancion>> buscarCanciones(@RequestBody BusquedaRequest request) {
     @PostMapping("/busqueda")
-    public ResponseEntity<List<Cancion>> buscarCanciones(@RequestBody BusquedaRequest request) {
+    public ResponseEntity<Cancion[]> buscarCanciones(@RequestBody BusquedaRequest request){
+
         ListaSimple<FiltroRequest> filtrosLista = new ListaSimple<>();
         if (request.getFiltros() != null) {
             for (FiltroRequest f : request.getFiltros()) {
@@ -69,49 +71,50 @@ public class CancionController {
                 filtrosLista
         );
 
-        List<Cancion> lista = new ArrayList<>();
+        //List<Cancion> lista = new ArrayList<>();
+        ListaSimple<Cancion> lista = new ListaSimple<>();
         for (Cancion c : resultados) {
-            lista.add(c);
+            //lista.add(c);
+            lista.agregarFinal(c);
         }
 
-        return ResponseEntity.ok(lista);
+       // return ResponseEntity.ok(lista.toArray());
+        return ResponseEntity.ok(lista.toArray(Cancion.class));
+
+
     }
 
-    // ============================================================
-    // 3️⃣ AUTOCOMPLETAR TÍTULOS (usuario)
-    // ============================================================
-   
-   /*
     @GetMapping("/autocompletar")
-    public ResponseEntity<List<String>> autocompletarTitulos(@RequestParam String query) {
-        List<String> sugerencias = new ArrayList<>();
-        for (Cancion c : repo.getListaCanciones()) {
-            if (c.getTitulo().toLowerCase().contains(query.toLowerCase()) && !sugerencias.contains(c.getTitulo())) {
-                sugerencias.add(c.getTitulo());
-            }
-        }
-        return ResponseEntity.ok(sugerencias);
-    }
-    */
-    @GetMapping("/autocompletar")
-    public ResponseEntity<List<String>> autocompletarTitulos(@RequestParam String query) {
-        return ResponseEntity.ok(repo.autocompletarTitulos(query));
+    public ResponseEntity<String[]> autocompletarTitulos(@RequestParam String query) {
+
+        ListaSimple<String> sugerencias = repo.autocompletarTitulos(query);
+
+        String[] arr = sugerencias.toArray(String.class);
+
+        return ResponseEntity.ok(arr);
     }
 
 
     // ============================================================
     // 4️⃣ LISTAR TODAS LAS CANCIONES (Administrador)
     // ============================================================
+
     @GetMapping
-    public ResponseEntity<List<Cancion>> listarCanciones() {
-        List<Cancion> lista = new ArrayList<>();
-        for (Cancion c : repo.getListaCanciones()) {
-            lista.add(c);
-        }
-        if (lista.isEmpty()) {
+    public ResponseEntity<Cancion[]> listarCanciones() {
+
+        // 1. Obtener la lista propia
+        ListaSimple<Cancion> lista = repo.getListaCanciones();
+
+        // 2. Si está vacía → NO_CONTENT
+        if (lista.size() == 0) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
-        return ResponseEntity.ok(lista);
+
+        // 3. Convertir ListaSimple → Cancion[]
+        Cancion[] arreglo = lista.toArray(Cancion.class);
+
+        // 4. Retornar arreglo JSON
+        return ResponseEntity.ok(arreglo);
     }
 
     // ============================================================
@@ -160,17 +163,28 @@ public class CancionController {
     // ============================================================
     // 7️⃣ CARGAR CANCIONES MASIVAMENTE DESDE /no_listadas
     // ============================================================
-    @PostMapping("/cargar")
-    public ResponseEntity<String> cargarCancionesDesdeArchivo() {
-        String rutaArchivo = "D:\\datos_syncup\\no_listadas\\metadatos.txt";
-        String carpetaNoListadas = "D:\\datos_syncup\\no_listadas\\";
 
-        try {
-            List<String> lineas = Files.readAllLines(Paths.get(rutaArchivo));
+    @PostMapping("/cargar")
+    public ResponseEntity<String> cargarCancionesDesdeArchivo(@RequestBody Map<String, String> body) {
+
+        String archivoSeleccionado = body.get("archivo");  // <<--- VIENE DESDE FLUTTER
+        if (archivoSeleccionado == null || archivoSeleccionado.isEmpty()) {
+            return ResponseEntity.badRequest().body("No se recibio el nombre del archivo a cargar.");
+        }
+
+        String carpetaNoListadas = "D:\\datos_syncup\\no_listadas\\";
+        String rutaArchivo = carpetaNoListadas + archivoSeleccionado;  // <<--- ARCHIVO DINÁMICO
+
+        try (BufferedReader br = new BufferedReader(new FileReader(rutaArchivo))) {
+
+            String linea;
             int cargadas = 0;
 
-            for (String linea : lineas) {
-                if (linea.trim().isEmpty() || linea.startsWith("titulo")) continue;
+            while ((linea = br.readLine()) != null) {
+
+                if (linea.trim().isEmpty() || linea.startsWith("titulo")) {
+                    continue;
+                }
 
                 String[] partes = linea.split(";");
                 if (partes.length < 5) continue;
@@ -191,22 +205,33 @@ public class CancionController {
                         cargadas++;
                     }
                 } else {
-                    c = new Cancion(UUID.randomUUID().toString(), titulo, artista, 
-                            genero, anio, 0, nombreArchivo);
+                    c = new Cancion(
+                            UUID.randomUUID().toString(),
+                            titulo,
+                            artista,
+                            genero,
+                            anio,
+                            0,
+                            nombreArchivo
+                    );
                     repo.agregarCancion(c);
                     cargadas++;
                 }
             }
 
-            return ResponseEntity.ok("Se cargaron " + cargadas + " canciones desde la carpeta no_listadas");
+            return ResponseEntity.ok("Se cargaron " + cargadas + 
+                " canciones desde el archivo: " + archivoSeleccionado);
+
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al leer metadatos.txt: " + e.getMessage());
+                    .body("Error al leer " + archivoSeleccionado + ": " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error inesperado: " + e.getMessage());
         }
     }
+
+
 
     // ============================================================
     // 8️⃣ AGREGAR UNA CANCIÓN INDIVIDUAL (Administrador)
@@ -231,24 +256,28 @@ public class CancionController {
     // ============================================================
     // 9️⃣ LISTAR ARCHIVOS EN /no_listadas
     // ============================================================
+
+
     @GetMapping("/archivos")
-    public ResponseEntity<List<String>> listarArchivosNoListadas() {
+    public ResponseEntity<String[]> listarArchivosNoListadas() {
         try {
             File carpeta = new File("D:\\datos_syncup\\no_listadas\\");
             if (!carpeta.exists() || !carpeta.isDirectory()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(List.of("No se encontró la carpeta especificada"));
+                String[] error = { "No se encontro la carpeta especificada" };
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
             }
 
             String[] nombres = carpeta.list();
-            if (nombres == null) return ResponseEntity.ok(List.of());
+            if (nombres == null || nombres.length == 0) {
+                String[] vacio = {};
+                return ResponseEntity.ok(vacio);
+            }
 
-            List<String> archivos = new ArrayList<>(Arrays.asList(nombres));
-            return ResponseEntity.ok(archivos);
+            return ResponseEntity.ok(nombres);
 
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(List.of("Error al listar archivos: " + e.getMessage()));
+            String[] error = { "Error al listar archivos: " + e.getMessage() };
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
 
@@ -256,20 +285,28 @@ public class CancionController {
     // ============================================================
     // 🔄 Construir o reconstruir grafo de similitud
     // ============================================================
+
     private void construirGrafoSiNoExiste() {
         if (grafoSimilitud == null) {
-            List<Cancion> canciones = new ArrayList<>();
-            for (Cancion c : repo.getListaCanciones()) {
-                canciones.add(c);
-            }
-            grafoSimilitud = GrafoDeSimilitudCancion.construir(canciones, 1);
-            System.out.println("✅ Grafo de similitud construido con " + canciones.size() + " canciones.");
+
+            // 1. Obtener tu ListaSimple
+            ListaSimple<Cancion> lista = repo.getListaCanciones();
+
+            // 2. Convertir a arreglo propio
+            Cancion[] cancionesArr = lista.toArray(Cancion.class);
+
+            // 3. Construir el grafo usando solo tu arreglo
+            grafoSimilitud = GrafoDeSimilitudCancion.construir(cancionesArr, 1);
+
+            System.out.println("Grafo de similitud construido con " + cancionesArr.length + " canciones.");
         }
     }
+
 
     // ============================================================
     // 🔟 RECOMENDAR CANCIONES SIMILARES // PARA INICIAR RADIO
     // ============================================================
+    /* 
     @GetMapping("/radio/{idCancion}")
     public ResponseEntity<List<Cancion>> iniciarRadio(@PathVariable String idCancion) {
         try {
@@ -291,55 +328,92 @@ public class CancionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
         }
     }
+*/
+   @GetMapping("/radio/{idCancion}")
+    public ResponseEntity<Cancion[]> iniciarRadio(@PathVariable String idCancion) {
+        try {
+            construirGrafoSiNoExiste();
 
+            // 1. Buscar la canción base por ID
+            Cancion base = repo.buscarPorId(idCancion);
+            if (base == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Cancion[0]);
+            }
 
+            // 2. Obtener recomendación usando SOLO estructuras propias
+            ListaSimple<Cancion> radioLista =
+                    grafoSimilitud.recomendarCancionesPropio(base, 10);
+
+            // 3. Convertir ListaSimple → arreglo JSON-friendly
+            Cancion[] respuesta = radioLista.toArray(Cancion.class);
+
+            return ResponseEntity.ok(respuesta);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Cancion[0]);
+        }
+    }
 
     @PostMapping("/recomendar-por-favoritos")
-    public ResponseEntity<List<Cancion>> recomendarPorFavoritos(@RequestParam String nombreUsuario) {
+    public ResponseEntity<Cancion[]> recomendarPorFavoritos(@RequestParam String nombreUsuario) {
         try {
             TablaHashUsuarios tablaUsuarios = FormularioController.getTablaUsuarios();
             Usuario usuario = tablaUsuarios.buscarUsuario(nombreUsuario);
 
             if (usuario == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Cancion[0]);
             }
 
-            List<Cancion> favoritas = usuario.getListaFavoritos();
-            if (favoritas == null || favoritas.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(List.of());
+            // Favoritos ahora es ListaSimple
+            ListaSimple<Cancion> favoritas = usuario.getListaFavoritos();
+
+            if (favoritas == null || favoritas.size() == 0) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new Cancion[0]);
             }
 
-            // 🔹 Construir grafo general con todo el catálogo
-            List<Cancion> todas = new ArrayList<>();
-            for (Cancion c : repo.getListaCanciones()) {
-                todas.add(c);
-            }
+            // 1. catálogo propio
+            ListaSimple<Cancion> lista = repo.getListaCanciones();
+            Cancion[] arregloCatalogo = lista.toArray(Cancion.class);
 
-            GrafoDeSimilitudCancion grafoGeneral = GrafoDeSimilitudCancion.construir(todas, 1);
+            // 2. construir grafo
+            GrafoDeSimilitudCancion grafoGeneral =
+                    GrafoDeSimilitudCancion.construir(arregloCatalogo, 1);
 
-            // 🔹 Buscar canciones similares a las favoritas
-            Set<Cancion> recomendadas = new HashSet<>();
+            // 3. recomendaciones propias
+            ListaSimple<Cancion> recomendadas = new ListaSimple<>();
+
             for (Cancion fav : favoritas) {
-                List<Cancion> similares = grafoGeneral.recomendarCanciones(fav, 5);
-                for (Cancion s : similares) {
-                    if (!favoritas.contains(s)) {
-                        recomendadas.add(s);
+
+                ListaSimple<Cancion> similaresLista =
+                        grafoGeneral.recomendarCancionesPropio(fav, 5);
+
+                for (Cancion s : similaresLista) {
+
+                    boolean yaEsFavorita = favoritas.obtenerPosicionNodo(s) != -1;
+                    boolean yaAgregada = recomendadas.obtenerPosicionNodo(s) != -1;
+
+                    if (!yaEsFavorita && !yaAgregada) {
+                        recomendadas.agregarFinal(s);
                     }
                 }
             }
 
-            if (recomendadas.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(List.of());
+            if (recomendadas.size() == 0) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new Cancion[0]);
             }
 
-            System.out.println("✅ Recomendaciones generadas para " + nombreUsuario + ": " + recomendadas.size());
-            return ResponseEntity.ok(new ArrayList<>(recomendadas));
+            Cancion[] respuesta = recomendadas.toArray(Cancion.class);
+
+            return ResponseEntity.ok(respuesta);
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Cancion[0]);
         }
     }
+
+
 
 
 

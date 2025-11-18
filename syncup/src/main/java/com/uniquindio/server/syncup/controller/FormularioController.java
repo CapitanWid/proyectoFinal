@@ -1,15 +1,17 @@
 package com.uniquindio.server.syncup.controller;
 
+import com.uniquindio.server.syncup.datastructures.ListaSimple;
 import com.uniquindio.server.syncup.datastructures.TablaHashUsuarios;
 import com.uniquindio.server.syncup.model.Formulario;
 import com.uniquindio.server.syncup.model.TipoUsuario;
 import com.uniquindio.server.syncup.model.Usuario;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
-import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/formulario")
@@ -24,7 +26,7 @@ public class FormularioController {
     // CONSTRUCTOR: carga inicial desde CSV
     // =========================================================
     public FormularioController() {
-        cargarUsuariosDesdeCSV(); // ✅ Se ejecuta al iniciar el servidor
+        cargarUsuariosDesdeCSV(); //  Se ejecuta al iniciar el servidor
     }
 
     // =========================================================
@@ -87,7 +89,6 @@ public class FormularioController {
     // MÉTODOS AUXILIARES
     // =========================================================
 
-    
     private void cargarUsuariosDesdeCSV() {
         Path path = Paths.get(FILE_PATH);
         if (!Files.exists(path)) {
@@ -95,13 +96,24 @@ public class FormularioController {
             return;
         }
 
-        try {
-            List<String> lineas = Files.readAllLines(path, StandardCharsets.UTF_8);
+        try (BufferedReader br = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+
+            ListaSimple<String> lineas = new ListaSimple<>();
+            String linea;
+
+            // Leer línea por línea SIN usar List
+            while ((linea = br.readLine()) != null) {
+                lineas.agregarFinal(linea);
+            }
+
             int count = 0;
 
-            for (String linea : lineas) {
-                String[] partes = linea.split(",");
+            // Procesar cada línea usando solo ListaSimple
+            for (String l : lineas) {
+                String[] partes = l.split(",");
+
                 if (partes.length == 5) {
+
                     Usuario usuario = new Usuario(
                             partes[0].trim(), // usuario
                             partes[1].trim(), // nombre
@@ -110,20 +122,22 @@ public class FormularioController {
                             partes[4].trim()  // contraseña
                     );
 
-                    // 🔹 Si el usuario es "admin" o su correo contiene "admin", darle privilegios
+                    // Asignar privilegios
                     if (usuario.getUsuario().equalsIgnoreCase("admin") ||
-                        usuario.getCorreo().toLowerCase().contains("admin")) {
+                            usuario.getCorreo().toLowerCase().contains("admin")) {
                         usuario.setTipo(TipoUsuario.ADMIN);
                     } else {
                         usuario.setTipo(TipoUsuario.NORMAL);
                     }
 
+                    // Guardar si no existe
                     if (!tablaUsuarios.existeUsuario(usuario.getUsuario())) {
                         tablaUsuarios.agregarUsuario(usuario);
                         count++;
                     }
                 }
             }
+
             System.out.println("✅ Usuarios cargados desde CSV: " + count);
 
         } catch (IOException e) {

@@ -285,5 +285,41 @@ public class ListaSimple<T extends Comparable<T>> implements Iterable<T> {
 
         return lista;
     }    
+
+   
+    public Object[] toArrayObject() {
+        Object[] arr = new Object[size];
+        Nodo<T> actual = firstNode;
+        int i = 0;
+
+        while (actual != null) {
+            arr[i++] = actual.getDato();
+            actual = actual.getSiguiente();
+        }
+
+        return arr;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T[] toArray(Class<T> tipo) {
+        T[] arr = (T[]) java.lang.reflect.Array.newInstance(tipo, size);
+
+        Nodo<T> actual = firstNode;
+        int i = 0;
+        while (actual != null) {
+            arr[i++] = actual.getDato();
+            actual = actual.getSiguiente();
+        }
+
+        return arr;
+    }
+
+
+
+
+
+
+
+
 }
 

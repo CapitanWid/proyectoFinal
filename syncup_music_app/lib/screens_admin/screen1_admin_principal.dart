@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:syncup_music_app/screens/screen7_perfil_usuario.dart';
 import 'package:syncup_music_app/screens_admin/screen2_gestionar_usuarios.dart';
 import 'package:syncup_music_app/screens_admin/screen3_admin_gestionar_canciones.dart';
-import 'package:syncup_music_app/screens_admin/screen5_admin_agregar_cancion.dart';
 import 'package:syncup_music_app/screens_admin/screen6_admin_metricas.dart';
 import 'package:syncup_music_app/screens_admin/screen7_admin_carga_masiva.dart';
 
@@ -71,16 +70,7 @@ class _ScreenAdminState extends State<ScreenAdmin> {
             MaterialPageRoute(builder: (_) => const ScreenAdminMetricas()),
           );
         }),
-        _buildMenuButton(Icons.report, "Reportes de usuarios", () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Abrir pantalla de reportes de usuarios")),
-          );
-        }),
-        _buildMenuButton(Icons.settings, "Configuración del sistema", () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Abrir pantalla de configuración")),
-          );
-        }),
+        
       ],
     );
   }
@@ -92,6 +82,7 @@ class _ScreenAdminState extends State<ScreenAdmin> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         titleSpacing: 0,
         title: Row(
           children: [

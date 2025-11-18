@@ -1,13 +1,10 @@
 package com.uniquindio.server.syncup;
 
-
 import com.uniquindio.server.syncup.model.Cancion;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CancionSimilaresTest {
-
-    //Prueba que el sistema de similitud entre canciones funciona correctamente.
 
     @Test
     void testObtenerSimilaresConConexiones() {
@@ -29,8 +26,8 @@ class CancionSimilaresTest {
         // Validar tamaño
         assertEquals(2, a.getSimilares().size());
 
-        // Validar que contiene las canciones correctas
-        assertTrue(a.getSimilares().contains(b));
-        assertTrue(a.getSimilares().contains(c));
+        // Validar que contiene las canciones correctas usando obtenerPosicionNodo()
+        assertNotEquals(-1, a.getSimilares().obtenerPosicionNodo(b));
+        assertNotEquals(-1, a.getSimilares().obtenerPosicionNodo(c));
     }
 }

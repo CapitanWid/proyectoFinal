@@ -120,4 +120,18 @@ class AudioPlayerService {
     }
   }
 
+  void reset() {
+    currentSong.value = null;
+    isPlaying.value = false;
+    isLoading.value = false;
+
+    playQueue.clear();
+    currentIndex = 0;
+
+    favoriteSongIds.clear();
+
+    player.stop();
+  }
+
+
 }

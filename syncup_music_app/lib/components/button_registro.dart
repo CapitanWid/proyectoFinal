@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:syncup_music_app/screens/screen2_registro.dart';
+import 'package:syncup_music_app/screens/screen3_registro_form.dart';
+
 
 class ButtonRegistro extends StatelessWidget {
   const ButtonRegistro({super.key});
@@ -10,7 +11,7 @@ class ButtonRegistro extends StatelessWidget {
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ScreenRegistroTipo()),
+          MaterialPageRoute(builder: (context) => const ScreenRegistroForm()),
         );
       },
       child: const Text('Registro'),

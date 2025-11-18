@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,7 +13,7 @@ class PerfilScreen extends StatelessWidget {
   const PerfilScreen({super.key});
 
   // ===============================================================
-  // 🔹 GUARDAR CSV EN CARPETA DE DESCARGAS REAL
+  //  GUARDAR CSV EN CARPETA DE DESCARGAS REAL
   // ===============================================================
   Future<void> _exportarFavoritos(BuildContext context) async {
     try {
@@ -67,11 +66,12 @@ class PerfilScreen extends StatelessWidget {
   }
 
   // ===============================================================
-  // 🔹 CERRAR SESIÓN
+  //  CERRAR SESIÓN
   // ===============================================================
   Future<void> _logout(BuildContext context) async {
     final audioService = AudioPlayerService();
-    await audioService.player.stop();
+    audioService.reset();
+    //await audioService.player.stop();
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', false);
@@ -108,6 +108,8 @@ class PerfilScreen extends StatelessWidget {
   // ===============================================================
   // 🔹 UI
   // ===============================================================
+ 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,12 +129,15 @@ class PerfilScreen extends StatelessWidget {
               },
             ),
 
-            // 🔥 Exportar CSV antes del logout
-            _buildMenuButton(
-              Icons.file_download,
-              "Exportar favoritos (.csv)",
-              () => _exportarFavoritos(context),
-            ),
+            // =====================================================
+            // 🔥 MOSTRAR SOLO SI NO ES ADMIN
+            // =====================================================
+            if (userTipo != "ADMIN")
+              _buildMenuButton(
+                Icons.file_download,
+                "Exportar favoritos (.csv)",
+                () => _exportarFavoritos(context),
+              ),
 
             _buildMenuButton(
               Icons.logout,
@@ -144,4 +149,6 @@ class PerfilScreen extends StatelessWidget {
       ),
     );
   }
+
+
 }

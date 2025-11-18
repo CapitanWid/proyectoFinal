@@ -3,6 +3,7 @@ package com.uniquindio.server.syncup.datastructures;
 
 import java.util.*;
 
+import com.uniquindio.server.syncup.model.TipoUsuario;
 import com.uniquindio.server.syncup.model.Usuario;
 
 public class GrafoSocial {
@@ -83,12 +84,40 @@ public class GrafoSocial {
         return resultado;
     }
 
-    public List<Usuario> getUsuarios() {
-        List<Usuario> lista = new ArrayList<>();
+
+    public ListaSimple<Usuario> getUsuarios() {
+        ListaSimple<Usuario> lista = new ListaSimple<>();
+
         for (NodoUsuario nodo : nodos) {
-            lista.add(nodo.getUsuario());
+            Usuario u = nodo.getUsuario();
+
+            //  No agregar usuarios de tipo admin
+            if (u.getTipo() != TipoUsuario.ADMIN) {
+                lista.agregarFinal(u);
+            }
         }
+
         return lista;
     }
+
+
+
+    public ListaSimple<Usuario> obtenerSeguidos(String usuario) {
+        NodoUsuario nodo = buscarNodo(usuario);
+        ListaSimple<Usuario> resultado = new ListaSimple<>();
+
+        if (nodo == null) {
+            return resultado;
+        }
+
+        for (NodoUsuario amigo : nodo.getAmigos()) {
+            resultado.agregarFinal(amigo.getUsuario());
+        }
+
+        return resultado;
+    }
+
+
+
 
 }

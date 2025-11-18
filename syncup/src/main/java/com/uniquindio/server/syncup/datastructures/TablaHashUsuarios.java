@@ -1,18 +1,19 @@
 package com.uniquindio.server.syncup.datastructures;
 
 import com.uniquindio.server.syncup.model.Usuario;
-import java.util.LinkedList;
 
 public class TablaHashUsuarios {
 
-    private LinkedList<Usuario>[] tabla;
+    private ListaSimple<Usuario>[] tabla;  // SOLO estructuras propias
     private int capacidad;
 
+    @SuppressWarnings("unchecked")
     public TablaHashUsuarios(int capacidad) {
         this.capacidad = capacidad;
-        this.tabla = new LinkedList[capacidad];
+        this.tabla = new ListaSimple[capacidad];
+
         for (int i = 0; i < capacidad; i++) {
-            tabla[i] = new LinkedList<>();
+            tabla[i] = new ListaSimple<>();
         }
     }
 
@@ -20,19 +21,31 @@ public class TablaHashUsuarios {
         return Math.abs(clave.hashCode()) % capacidad;
     }
 
+    // ===========================
+    // AGREGAR USUARIO
+    // ===========================
     public void agregarUsuario(Usuario usuario) {
         int index = hash(usuario.getUsuario());
-        for (Usuario u : tabla[index]) {
+        ListaSimple<Usuario> bucket = tabla[index];
+
+        // Verificar duplicado
+        for (Usuario u : bucket) {
             if (u.getUsuario().equalsIgnoreCase(usuario.getUsuario())) {
                 throw new IllegalArgumentException("El usuario ya existe");
             }
         }
-        tabla[index].add(usuario);
+
+        bucket.agregarFinal(usuario);
     }
 
+    // ===========================
+    // BUSCAR
+    // ===========================
     public Usuario buscarUsuario(String nombreUsuario) {
         int index = hash(nombreUsuario);
-        for (Usuario u : tabla[index]) {
+        ListaSimple<Usuario> bucket = tabla[index];
+
+        for (Usuario u : bucket) {
             if (u.getUsuario().equalsIgnoreCase(nombreUsuario)) {
                 return u;
             }
@@ -44,22 +57,38 @@ public class TablaHashUsuarios {
         return buscarUsuario(nombreUsuario) != null;
     }
 
+    // ===========================
+    // ELIMINAR
+    // ===========================
     public void eliminarUsuario(String nombreUsuario) {
         int index = hash(nombreUsuario);
-        tabla[index].removeIf(u -> u.getUsuario().equalsIgnoreCase(nombreUsuario));
+        ListaSimple<Usuario> bucket = tabla[index];
+
+        int pos = bucket.obtenerPosicionNodo(
+                new Usuario(nombreUsuario, "", "", "", "")
+        );
+
+        if (pos != -1) {
+            bucket.eliminarEn(pos);
+        }
     }
 
-    // Alias adicional para que otros controladores usen el mismo método
+    // Alias
     public Usuario buscar(String nombreUsuario) {
         return buscarUsuario(nombreUsuario);
     }
 
-    // Método opcional: obtener todos los usuarios
-    public LinkedList<Usuario> obtenerTodos() {
-        LinkedList<Usuario> lista = new LinkedList<>();
-        for (LinkedList<Usuario> bucket : tabla) {
-            lista.addAll(bucket);
+    // ===========================
+    // OBTENER TODOS
+    // ===========================
+    public ListaSimple<Usuario> obtenerTodos() {
+        ListaSimple<Usuario> salida = new ListaSimple<>();
+
+        for (ListaSimple<Usuario> bucket : tabla) {
+            for (Usuario u : bucket) {
+                salida.agregarFinal(u);
+            }
         }
-        return lista;
+        return salida;
     }
 }
